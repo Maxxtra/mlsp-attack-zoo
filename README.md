@@ -7,6 +7,11 @@ ConvNeXt), și care rezistă cel mai bine la ce buget de perturbație.
 Echipa: Andreea (atacurile pe gradient și tabelul principal), David (Carlini-Wagner, AutoAttack,
 transferabilitate, vizualizări, reproducibilitate).
 
+## Planul tău, pas cu pas
+
+- [Andreea](docs/plan-andreea.md)
+- [David](docs/plan-david.md)
+
 ## Setup (15 minute)
 
 ```bash
