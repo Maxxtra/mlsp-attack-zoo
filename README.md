@@ -21,7 +21,13 @@ pip install git+https://github.com/fra31/auto-attack     # pentru David
 python src/data.py --download imagenette                 # ~330 MB, o singura data
 ```
 
-Ai nevoie de GPU. Fără, merge, dar de 20 de ori mai încet.
+Ai nevoie de GPU pentru grila completă. Dacă nu ai (laptop cu Radeon integrat, Mac fără CUDA), două variante:
+
+- **Google Colab**, gratis, cu GPU T4: https://colab.research.google.com. Într-un notebook nou:
+  `!git clone https://github.com/Maxxtra/mlsp-attack-zoo && cd mlsp-attack-zoo && pip install -r requirements.txt`
+  apoi rulezi scripturile cu `!python src/...`. Rezultatele le descarci și le comiți de pe laptop.
+- **Pe CPU**, pentru prima cifră: `--n 100`, modelul `efficientnet` (cel mai ușor), și la AutoAttack
+  flag-ul `--fast` (doar APGD-CE, în loc de tot ansamblul). Câteva minute în loc de ore.
 
 ## Un lucru important despre date
 
