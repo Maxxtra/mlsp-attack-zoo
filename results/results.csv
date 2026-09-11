@@ -1,1 +1,3 @@
 dataset,model,attack,norm,eps,n,clean_acc,robust_acc,seconds
+imagenette,resnet50,pgd,linf,4/255,1000,0.9980,0.0190,69
+imagenette,vit,pgd,linf,4/255,1000,0.9890,0.0160,312
