@@ -29,7 +29,7 @@ def main():
         adv.apgd.n_restarts = 1
     else:
         adv = AutoAttack(model, norm={"linf":"Linf","l2":"L2"}[a.norm], eps=eps, version="standard", device=a.device)
-    x_adv = adv.run_standard_eval(x, y, bs=64 if a.device == "cuda" else 16)
+    x_adv = adv.run_standard_evaluation(x, y, bs=64 if a.device == "cuda" else 16)
     with torch.no_grad(): rob = (model(x_adv).argmax(1) == y).float().mean().item()
     sec = time.time()-t0
     print(f"{a.dataset} {a.model} autoattack {a.norm} eps={a.eps}: clean={clean:.3f} robust={rob:.3f} ({sec:.0f}s)")

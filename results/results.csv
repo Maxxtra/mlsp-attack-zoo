@@ -1,1 +1,2 @@
 dataset,model,attack,norm,eps,n,clean_acc,robust_acc,seconds
+imagenette,efficientnet,autoattack-fast,linf,4/255,100,1.0000,0.0000,23761
