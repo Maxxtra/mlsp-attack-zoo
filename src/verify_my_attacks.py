@@ -1,3 +1,11 @@
+"""Checks that my_attacks.fgsm and my_attacks.pgd match torchattacks.
+
+Runs on one batch of real data, at several eps values. Random start is switched
+off on both sides so the comparison is deterministic.
+
+    python src/verify_my_attacks.py --dataset imagenette --model resnet50
+    python src/verify_my_attacks.py --dataset imagenette --model vit --eps 1/255 2/255 4/255
+"""
 import argparse
 import torch
 import torchattacks
@@ -6,20 +14,29 @@ from models import load
 from my_attacks import fgsm, pgd
 from run_attack import parse_eps
 
+# cudnn picks faster convolution algorithms that sum in a varying order, so two
+# identical backward passes can differ in the last digits. Where the gradient is
+# near zero that flips sign() and the attack lands on the other side of the ball.
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
+
 TOL = 1e-6
 
-def compare(name, mine, theirs, model, x, y, eps):
+
+def compare(name, mine, theirs, baseline, model, x, y, eps):
     max_diff = (mine - theirs).abs().max().item()
+    noise = (theirs - baseline).abs().max().item()
     budget = (mine - x).abs().max().item()
     with torch.no_grad():
         acc_mine = (model(mine).argmax(1) == y).float().mean().item()
         acc_theirs = (model(theirs).argmax(1) == y).float().mean().item()
-    ok = max_diff < TOL and budget <= eps + TOL
-    print(f"  {name:>4}  diff {max_diff:.2e}   robust mine {acc_mine:.3f} / lib {acc_theirs:.3f}   "
-          f"max perturbation {budget:.5f}   {'OK' if ok else 'DIFFERENT'}")
+    ok = max_diff <= max(TOL, noise) and budget <= eps + TOL
+    print(f"  {name:>4}  diff {max_diff:.2e}  lib-vs-lib {noise:.2e}  "
+          f"robust mine {acc_mine:.3f} / lib {acc_theirs:.3f}  "
+          f"max perturbation {budget:.5f}  {'OK' if ok else 'DIFFERENT'}")
     return ok
- 
- 
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dataset", default="imagenette")
@@ -29,15 +46,15 @@ def main():
     ap.add_argument("--n", type=int, default=32)
     ap.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     a = ap.parse_args()
- 
+
     model = load(a.model, a.dataset, a.device)
     x, y = next(iter(get_loader(a.dataset, n=a.n, batch=a.n)))
     x, y = x.to(a.device), y.to(a.device)
- 
+
     with torch.no_grad():
         clean = (model(x).argmax(1) == y).float().mean().item()
     print(f"{a.dataset} {a.model}, {len(y)} images, clean acc {clean:.3f}\n")
- 
+
     all_ok = True
     for eps_str in a.eps:
         eps = parse_eps(eps_str)
@@ -45,15 +62,18 @@ def main():
         print(f"eps = {eps_str}")
         all_ok &= compare("FGSM", fgsm(model, x, y, eps),
                           torchattacks.FGSM(model, eps=eps)(x, y),
+                          torchattacks.FGSM(model, eps=eps)(x, y),
                           model, x, y, eps)
         all_ok &= compare("PGD", pgd(model, x, y, eps, alpha, a.steps, random_start=False),
                           torchattacks.PGD(model, eps=eps, alpha=alpha, steps=a.steps,
                                            random_start=False)(x, y),
+                          torchattacks.PGD(model, eps=eps, alpha=alpha, steps=a.steps,
+                                           random_start=False)(x, y),
                           model, x, y, eps)
- 
-    print("\nall match" if all_ok else "\nmismatch, look for a bug")
- 
- 
+
+    print("\nall match" if all_ok else
+          "\nmismatch beyond the library's own run-to-run spread, look for a bug")
+
+
 if __name__ == "__main__":
     main()
- 
