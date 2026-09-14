@@ -2,3 +2,15 @@ dataset,model,attack,norm,eps,n,clean_acc,robust_acc,seconds
 imagenette,resnet50,pgd,linf,4/255,1000,0.9980,0.0190,69
 imagenette,vit,pgd,linf,4/255,1000,0.9890,0.0160,312
 imagenette,efficientnet,autoattack-fast,linf,4/255,100,1.0000,0.0000,23761
+imagenette,efficientnet,autoattack,linf,4/255,500,1.0000,0.0000,176
+imagenette,resnet50,autoattack,linf,4/255,500,1.0000,0.0000,383
+imagenette,convnext,autoattack,linf,4/255,500,1.0000,0.0000,500
+imagenette,efficientnet,autoattack,linf,1/255,500,1.0000,0.0120,330
+imagenette,resnet50,autoattack,linf,1/255,500,1.0000,0.0040,499
+imagenette,convnext,autoattack,linf,1/255,500,1.0000,0.0000,507
+imagenette,vit,autoattack,linf,1/255,500,0.9880,0.0980,8480
+imagenette,efficientnet,autoattack,linf,2/255,500,1.0000,0.0000,179
+imagenette,resnet50,autoattack,linf,2/255,500,1.0000,0.0000,385
+imagenette,convnext,autoattack,linf,2/255,500,1.0000,0.0000,499
+imagenette,vit,autoattack,linf,2/255,500,0.9880,0.0000,1412
+imagenette,vit,autoattack,linf,4/255,500,0.9880,0.0000,1216
