@@ -1,3 +1,5 @@
+"""FGSM and PGD written from scratch, to check against torchattacks."""
+
 import torch
 import torch.nn as nn
 
