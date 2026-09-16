@@ -2,6 +2,7 @@
 
     python src/make_figures.py
     python src/make_figures.py --norm l2
+    python src/make_figures.py --n 500
 
 One panel per attack, one curve per model: accuracy under attack against the
 perturbation budget.
@@ -18,12 +19,15 @@ ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 ap = argparse.ArgumentParser()
 ap.add_argument("--dataset", default="imagenette")
 ap.add_argument("--norm", default="linf")
+ap.add_argument("--n", type=int, default=200)
 args = ap.parse_args()
 
 table = pd.read_csv(os.path.join(ROOT, "results", "results.csv"))
-table = table[(table["dataset"] == args.dataset) & (table["norm"] == args.norm)]
+table = table[(table["dataset"] == args.dataset)
+              & (table["norm"] == args.norm)
+              & (table["n"] == args.n)]
 if len(table) == 0:
-    raise SystemExit(f"no rows for {args.dataset} {args.norm} in results.csv")
+    raise SystemExit(f"no rows for {args.dataset} {args.norm} n={args.n} in results.csv")
 
 # "4/255" is text; turn it into a number so it can go on an axis
 table["eps_number"] = table["eps"].map(lambda s: eval(s))
@@ -52,10 +56,10 @@ for panel, attack in zip(panels, attacks):
 panels[0].set_ylabel("accuracy under attack")
 panels[0].set_ylim(0, 1)
 panels[-1].legend(fontsize=8)
-figure.suptitle(f"{args.dataset}, {args.norm}")
+figure.suptitle(f"{args.dataset}, {args.norm}, n={args.n}")
 figure.tight_layout()
 
 os.makedirs(os.path.join(ROOT, "figures"), exist_ok=True)
-output = os.path.join(ROOT, "figures", f"robust_acc_{args.dataset}_{args.norm}.png")
+output = os.path.join(ROOT, "figures", f"robust_acc_{args.dataset}_{args.norm}_n{args.n}.png")
 figure.savefig(output, dpi=150)
 print("written:", output)
