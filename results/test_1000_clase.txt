@@ -1,0 +1,12 @@
+resnet50, fgsm eps=32/255, 200 images
+
+  clean, 10 classes:      1.000
+  clean, 1000 classes:    0.885
+  attacked, 10 classes:   0.805
+  attacked, 1000 classes: 0.240
+convnext, fgsm eps=32/255, 200 images
+
+  clean, 10 classes:      1.000
+  clean, 1000 classes:    0.905
+  attacked, 10 classes:   0.855
+  attacked, 1000 classes: 0.435
