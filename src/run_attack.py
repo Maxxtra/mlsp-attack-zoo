@@ -6,6 +6,7 @@ Atacuri: fgsm, bim, pgd, deepfool, cw   (norma: linf sau l2)
 import argparse, os, csv, time, torch, torchattacks
 from data import get_loader
 from models import load
+from my_attacks import fgsm_l2, bim_l2
 
 RESULTS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "results", "results.csv")
 
@@ -13,11 +14,16 @@ def parse_eps(s):  # accepta "4/255" sau "0.0157"
     return eval(s) if "/" in s else float(s)
 
 def make_attack(name, model, eps, norm, steps):
+    # torchattacks only ships FGSM and BIM in Linf, so the L2 versions come from my_attacks
+    if norm == "l2":
+        if name == "fgsm": return lambda x, y: fgsm_l2(model, x, y, eps)
+        if name == "bim":  return lambda x, y: bim_l2(model, x, y, eps, eps/4, steps)
+        if name == "pgd":  return torchattacks.PGDL2(model, eps=eps, alpha=eps/4, steps=steps, random_start=True)
+        if name == "cw":   return torchattacks.CW(model, c=1, kappa=0, steps=steps, lr=0.01)
+        raise ValueError(f"{name} has no l2 version")
     if name == "fgsm": return torchattacks.FGSM(model, eps=eps)
     if name == "bim":  return torchattacks.BIM(model, eps=eps, alpha=eps/4, steps=steps)
-    if name == "pgd":
-        return torchattacks.PGD(model, eps=eps, alpha=eps/4, steps=steps, random_start=True) if norm=="linf" \
-          else torchattacks.PGDL2(model, eps=eps, alpha=eps/4, steps=steps, random_start=True)
+    if name == "pgd":  return torchattacks.PGD(model, eps=eps, alpha=eps/4, steps=steps, random_start=True)
     if name == "deepfool": return torchattacks.DeepFool(model, steps=50)
     if name == "cw": return torchattacks.CW(model, c=1, kappa=0, steps=steps, lr=0.01)
     raise ValueError(name)
